@@ -1,0 +1,18 @@
+- name: Instalar mariadb
+  apt:
+    pkg: 
+      - mariadb-server
+      - python3-mysqldb
+
+- name: Crear la base de datos practica
+  mysql_db: name={{nombre_bd}} state=present
+
+- name: Crear el usuario practica
+  mysql_user: name={{usuario_bd}} host={{ item }} password={{clave_bd}} priv={{nombre_bd}}.*:ALL,GRANT
+  with_items:
+    - '%'
+
+- name: Configurar mariadb para que escuche por todas las interfaces
+  lineinfile: dest=/etc/mysql/mariadb.conf.d/50-server.cnf regexp="^bind-address            = 127.0.0.1" line="bind-address            = 0.0.0.0" state=present
+  notify:
+    - restart mariadb

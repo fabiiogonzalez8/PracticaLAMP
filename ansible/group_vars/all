@@ -1,0 +1,36 @@
+usuario_remoto: vagrant
+router_eth1: 192.168.1.5
+router_eth2: 192.168.10.10
+web_eth1: 192.168.10.200
+web_eth2: 10.0.0.20
+bd_eth1: 192.168.10.100
+bd_eth2: 10.0.0.10
+
+# Variables para router
+
+ip_puertaenlace_router: 192.168.1.1
+tarjetared_puertaenlace: eth1
+ip_redinterna_snat: 192.168.10.0/24
+tarjetared_salida: eth1
+tarjetared_entrada: eth1
+puerto_destino: 80
+ip_destino_dnat: 192.168.10.200:80
+
+# Variables para mariadb
+
+nombre_bd: practicaremoto
+usuario_bd: remoto
+clave_bd: asdasd
+
+# Variables para red_interna
+
+puertaenlace_redinterna: 192.168.10.10
+tarjetasalida: eth1
+
+# Variables para web
+
+rutalocalficheroconf: "../files/misitio.conf"
+rutaficherozip: ../templates/site.zip
+descomprimir_remoto: "/var/www/site.zip"
+dondedescomprime_remoto: "/var/www/misitio/"
+documentroot: /var/www/misitio

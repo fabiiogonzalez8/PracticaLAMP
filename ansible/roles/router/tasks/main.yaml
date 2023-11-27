@@ -1,0 +1,43 @@
+- name: Eliminar la ruta por defecto si existe
+  shell: ip route delete default || true
+  
+- name: Meter la nueva ruta
+  shell: ip route add default via {{ip_puertaenlace_router}} dev {{tarjetared_puertaenlace}} && echo "up route add default -net 192.168.1.0 netmask 255.255.255.0 gw {{ip_puertaenlace_router}}" >> /etc/network/interfaces
+
+- name: Modificar el bit de forwarding
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: Hacer SNAT
+  iptables:
+    chain: POSTROUTING
+    source: "{{ip_redinterna_snat}}"
+    jump: MASQUERADE
+    out_interface: "{{tarjetared_salida}}"
+    table: nat
+  become: yes
+
+- name: Hacer DNAT
+  iptables:
+    chain: PREROUTING
+    in_interface: "{{tarjetared_entrada}}"
+    destination_port: "{{puerto_destino}}"
+    jump: DNAT
+    protocol: tcp
+    table: nat
+    to_destination: "{{ip_destino_dnat}}"
+  become: yes
+
+- name: Hacer persistente la regla SNAT
+  lineinfile:
+    path: /etc/network/interfaces
+    line: post-up iptables -t nat -A POSTROUTING -s {{ip_redinterna_snat}} -o {{tarjetared_salida}} -j MASQUERADE
+
+- name: Hacer persistente la regla DNAT
+  lineinfile:
+    path: /etc/network/interfaces
+    line: post-up iptables -t nat - A PREROUTING -i {{tarjetared_entrada}} -p tcp --dport {{puerto_destino}} -j DNAT --to-destination {{ip_destino_dnat}}

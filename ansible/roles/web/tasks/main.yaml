@@ -1,0 +1,68 @@
+- name: "Instalar apache y mariadb-client"
+  apt:
+    name:
+      - apache2
+      - mariadb-client
+      - unzip
+      - tar
+
+- name: "Copiar el fichero .conf"
+  copy:
+    src: "{{rutalocalficheroconf}}"
+    dest: /etc/apache2/sites-available/
+    owner: root
+    group: root
+    mode: 0644
+
+- name: "Crea el directorio misitio si no esta creado"
+  ansible.builtin.file:
+    path: /var/www/misitio
+    state: directory
+    owner: www-data
+    group: www-data
+
+- name: "Copia el zip al servidor"
+  copy:
+    src: "{{rutaficherozip}}"
+    dest: /var/www/
+    mode: '0644'
+
+- name: "Descomprime el contenido"
+  unarchive:
+    src: "{{descomprimir_remoto}}"
+    dest: "{{dondedescomprime_remoto}}"
+    remote_src: yes
+
+- name: "Dar permisos www-data"
+  file:
+    path: "{{documentroot}}"
+    owner: www-data
+    group: www-data
+    recurse: yes
+
+- name: "Habilitar el rewrite"
+  apache2_module: 
+    state: present
+    name: rewrite
+
+- name: "Copiar fichero de configuración y reiniciar el servicio"
+  copy:
+    src: ../files/etc/apache2/ports.conf
+    dest: /etc/apache2/ports.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - restart apache2
+
+- name: "Habilitar el virtualhost"
+  command: a2ensite misitio.conf
+  args:
+    creates: /etc/apache2/sites-enabled/misitio.conf
+  notify:
+    - restart apache2
+
+- name: "Añadir resolución estática"
+  lineinfile:
+    path: /etc/hosts
+    line: 10.0.0.10 bd-fabio.supergallo.org

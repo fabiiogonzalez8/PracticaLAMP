@@ -1,0 +1,9 @@
+- name: Actualizamos el sistema
+  apt: update_cache=yes upgrade=yes
+
+- name: Copiar la clave publica del usuario actual
+  authorized_key:
+    user: "{{ usuario_remoto }}"  # Nombre del usuario remoto
+    key: "{{ lookup('file', '/home/fabio/.ssh/clave.pub') }}"
+    state: present
+

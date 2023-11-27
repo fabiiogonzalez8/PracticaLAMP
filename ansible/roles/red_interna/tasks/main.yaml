@@ -1,0 +1,5 @@
+- name: Eliminar la ruta por defecto si existe
+  shell: ip route delete default || true
+
+- name: Meter la nueva ruta
+  shell: ip route add default via {{puertaenlace_redinterna}} dev {{tarjetasalida}}
